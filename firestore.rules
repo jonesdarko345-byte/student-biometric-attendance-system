@@ -1,0 +1,116 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net: Default Deny Catch-All
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Common Security Helper Functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Master Admin Helper (Bootstrapped with project owner email)
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == "jonesdarko345@gmail.com" ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // Connection Health Test Doc
+    match /test/{testId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // User Profiles
+    match /users/{userId} {
+      allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isSignedIn() && request.auth.uid == userId && isValidId(userId);
+      allow update: if isSignedIn() && (request.auth.uid == userId || isAdmin()) && isValidId(userId);
+      allow delete: if isAdmin();
+    }
+
+    // Students Collection
+    match /students/{studentId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(studentId)
+        && incoming().name is string && incoming().name.size() > 0 && incoming().name.size() <= 100
+        && incoming().indexNumber is string && incoming().indexNumber.size() > 0 && incoming().indexNumber.size() <= 30;
+      allow update: if isSignedIn() && isValidId(studentId)
+        && incoming().name is string && incoming().name.size() > 0 && incoming().name.size() <= 100;
+      allow delete: if isSignedIn();
+    }
+
+    // Courses Collection
+    match /courses/{courseId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(courseId)
+        && incoming().code is string && incoming().code.size() > 0 && incoming().code.size() <= 20
+        && incoming().title is string && incoming().title.size() > 0 && incoming().title.size() <= 150;
+      allow update: if isSignedIn() && isValidId(courseId);
+      allow delete: if isSignedIn();
+    }
+
+    // Timetable Slots Collection
+    match /timetable/{slotId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(slotId)
+        && incoming().dayOfWeek is number && incoming().dayOfWeek >= 1 && incoming().dayOfWeek <= 6;
+      allow update: if isSignedIn() && isValidId(slotId);
+      allow delete: if isSignedIn();
+    }
+
+    // Attendance Records Collection
+    match /attendance/{attendanceId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(attendanceId)
+        && incoming().date is string && incoming().courseId is string;
+      // Protected updates: finalized records can only be altered/unlocked by admins or when unlocking
+      allow update: if isSignedIn() && isValidId(attendanceId) && (
+        isAdmin() ||
+        resource.data.isFinalized == false ||
+        incoming().diff(resource.data).affectedKeys().hasOnly(['isFinalized'])
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Audit Logs Collection: Append-Only Immutable Records
+    match /auditLogs/{logId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(logId)
+        && incoming().action is string && incoming().action.size() <= 100
+        && incoming().user is string;
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    // Authorized Personnel Registry (HOD, Lecturers, Class Reps)
+    match /authorizedUsers/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // System Settings (Auto-Logging & Attendance Governance Policies)
+    match /systemSettings/{settingId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isValidId(settingId);
+    }
+  }
+}

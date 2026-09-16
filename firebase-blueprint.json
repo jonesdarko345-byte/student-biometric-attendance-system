@@ -1,0 +1,395 @@
+{
+  "entities": {
+    "Student": {
+      "title": "Student",
+      "description": "Enrolled student in class roster with biometric status",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique student identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "Student full name",
+          "maxLength": 100
+        },
+        "indexNumber": {
+          "type": "string",
+          "description": "UENR student index number (e.g. UEB3100122)",
+          "maxLength": 30
+        },
+        "email": {
+          "type": "string",
+          "description": "Institutional email address",
+          "maxLength": 100
+        },
+        "program": {
+          "type": "string",
+          "description": "Academic degree program",
+          "maxLength": 100
+        },
+        "level": {
+          "type": "string",
+          "description": "Academic class level (e.g. Level 300)",
+          "maxLength": 30
+        },
+        "enrolledFingers": {
+          "type": "array",
+          "description": "List of enrolled finger labels"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Date enrolled YYYY-MM-DD"
+        }
+      },
+      "required": ["id", "name", "indexNumber", "program", "level"]
+    },
+    "Course": {
+      "title": "Course",
+      "description": "Academic course in syllabus",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique course identifier"
+        },
+        "code": {
+          "type": "string",
+          "description": "Course code (e.g. IT 301)",
+          "maxLength": 20
+        },
+        "title": {
+          "type": "string",
+          "description": "Course title",
+          "maxLength": 150
+        },
+        "creditHours": {
+          "type": "number",
+          "description": "Academic credit units"
+        },
+        "lecturer": {
+          "type": "string",
+          "description": "Lecturer in charge",
+          "maxLength": 100
+        },
+        "department": {
+          "type": "string",
+          "description": "Responsible department",
+          "maxLength": 100
+        }
+      },
+      "required": ["id", "code", "title", "creditHours", "lecturer"]
+    },
+    "TimetableSlot": {
+      "title": "TimetableSlot",
+      "description": "Scheduled weekly lecture session",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Slot identifier"
+        },
+        "courseId": {
+          "type": "string",
+          "description": "Associated course ID",
+          "maxLength": 50
+        },
+        "dayOfWeek": {
+          "type": "number",
+          "description": "Weekday index 1-5 (Mon-Fri)"
+        },
+        "startTime": {
+          "type": "string",
+          "description": "Start time HH:MM",
+          "maxLength": 10
+        },
+        "endTime": {
+          "type": "string",
+          "description": "End time HH:MM",
+          "maxLength": 10
+        },
+        "venue": {
+          "type": "string",
+          "description": "Campus lecture hall or lab venue",
+          "maxLength": 100
+        }
+      },
+      "required": ["id", "courseId", "dayOfWeek", "startTime", "endTime", "venue"]
+    },
+    "AttendanceRecord": {
+      "title": "AttendanceRecord",
+      "description": "Attendance log for a specific date and course session",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Record identifier"
+        },
+        "date": {
+          "type": "string",
+          "description": "Session date YYYY-MM-DD",
+          "maxLength": 20
+        },
+        "courseId": {
+          "type": "string",
+          "description": "Course identifier",
+          "maxLength": 50
+        },
+        "timetableSlotId": {
+          "type": "string",
+          "description": "Optional timetable slot ID",
+          "maxLength": 50
+        },
+        "isFinalized": {
+          "type": "boolean",
+          "description": "Whether session is locked"
+        },
+        "finalizedAt": {
+          "type": "string",
+          "description": "ISO timestamp when finalized"
+        },
+        "records": {
+          "type": "object",
+          "description": "Mapping studentId to attendance status (present/absent)"
+        },
+        "biometricVerifiedStudentIds": {
+          "type": "array",
+          "description": "Array of student IDs verified with biometric fingerprint"
+        }
+      },
+      "required": ["id", "date", "courseId", "isFinalized", "records"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "System event audit trail entry",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Log identifier"
+        },
+        "action": {
+          "type": "string",
+          "description": "Action performed",
+          "maxLength": 100
+        },
+        "details": {
+          "type": "string",
+          "description": "Contextual details",
+          "maxLength": 500
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "ISO timestamp"
+        },
+        "user": {
+          "type": "string",
+          "description": "User or operator name/email",
+          "maxLength": 100
+        },
+        "type": {
+          "type": "string",
+          "description": "Category: attendance, biometric, student, timetable",
+          "maxLength": 30
+        }
+      },
+      "required": ["id", "action", "details", "timestamp", "user", "type"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User account profile and role information",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Firebase Auth UID"
+        },
+        "email": {
+          "type": "string",
+          "description": "Google email",
+          "maxLength": 120
+        },
+        "displayName": {
+          "type": "string",
+          "description": "User display name",
+          "maxLength": 100
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "Avatar photo URL",
+          "maxLength": 500
+        },
+        "role": {
+          "type": "string",
+          "description": "User role: hod, lecturer, or class_rep",
+          "maxLength": 30
+        },
+        "department": {
+          "type": "string",
+          "description": "Academic department",
+          "maxLength": 100
+        }
+      },
+      "required": ["id", "email", "displayName", "role"]
+    },
+    "AuthorizedPersonnel": {
+      "title": "AuthorizedPersonnel",
+      "description": "Whitelisted personnel allowed access: HODs, Lecturers, and Class Reps",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Identifier or sanitized email"
+        },
+        "email": {
+          "type": "string",
+          "description": "Google email address",
+          "maxLength": 120
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name or designation",
+          "maxLength": 100
+        },
+        "role": {
+          "type": "string",
+          "description": "Role: hod, lecturer, or class_rep",
+          "maxLength": 30
+        },
+        "department": {
+          "type": "string",
+          "description": "Academic department or class level",
+          "maxLength": 100
+        },
+        "addedAt": {
+          "type": "string",
+          "description": "Date or ISO string when authorized"
+        }
+      },
+      "required": ["id", "email", "role"]
+    },
+    "AutoLoggingSettings": {
+      "title": "AutoLoggingSettings",
+      "description": "System-wide automated audit logging and attendance finalization policies",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Setting document identifier (e.g. autoLogging)"
+        },
+        "autoLogBiometricScanSuccess": {
+          "type": "boolean",
+          "description": "Log verified student biometric scans"
+        },
+        "autoLogBiometricScanFailure": {
+          "type": "boolean",
+          "description": "Log rejected biometric scan attempts"
+        },
+        "autoLogSessionDrafts": {
+          "type": "boolean",
+          "description": "Log draft roll call updates"
+        },
+        "autoLogFinalizedSessions": {
+          "type": "boolean",
+          "description": "Log attendance session locking"
+        },
+        "autoFinalizeOnClassEnd": {
+          "type": "boolean",
+          "description": "Auto-lock attendance after lecture slot"
+        },
+        "autoFinalizeGracePeriodMinutes": {
+          "type": "number",
+          "description": "Minutes after lecture end before locking"
+        },
+        "autoMarkAbsentOnFinalize": {
+          "type": "boolean",
+          "description": "Auto-mark unverified students as absent"
+        },
+        "autoFlagLateArrivals": {
+          "type": "boolean",
+          "description": "Flag check-ins after class start"
+        },
+        "lateThresholdMinutes": {
+          "type": "number",
+          "description": "Threshold minutes after start considered late"
+        },
+        "autoAlertAttendanceDeficit": {
+          "type": "boolean",
+          "description": "Alert when attendance drops below 75%"
+        },
+        "autoLogAuthLogins": {
+          "type": "boolean",
+          "description": "Log sign-ins and session changes"
+        },
+        "autoLogRoleChanges": {
+          "type": "boolean",
+          "description": "Log staff authorization and role updates"
+        },
+        "autoLogRosterModifications": {
+          "type": "boolean",
+          "description": "Log student roster changes"
+        },
+        "autoLogTimetableChanges": {
+          "type": "boolean",
+          "description": "Log timetable slot scheduling edits"
+        },
+        "autoLogReportExports": {
+          "type": "boolean",
+          "description": "Log report and CSV downloads"
+        },
+        "autoLogOfflineSync": {
+          "type": "boolean",
+          "description": "Log offline service worker re-sync events"
+        },
+        "logRetentionDays": {
+          "type": "number",
+          "description": "Days to preserve audit logs"
+        },
+        "autoPruneOldLogs": {
+          "type": "boolean",
+          "description": "Auto-delete logs past retention window"
+        },
+        "realtimeCloudSync": {
+          "type": "boolean",
+          "description": "Instant cloud sync for audit records"
+        }
+      },
+      "required": ["id", "autoLogBiometricScanSuccess", "logRetentionDays"]
+    }
+  },
+  "firestore": {
+    "/students/{studentId}": {
+      "schema": "Student",
+      "description": "Collection of student academic and biometric records"
+    },
+    "/courses/{courseId}": {
+      "schema": "Course",
+      "description": "Collection of department courses"
+    },
+    "/timetable/{slotId}": {
+      "schema": "TimetableSlot",
+      "description": "Collection of recurring weekly timetable slots"
+    },
+    "/attendance/{attendanceId}": {
+      "schema": "AttendanceRecord",
+      "description": "Collection of course attendance roll call records"
+    },
+    "/auditLogs/{logId}": {
+      "schema": "AuditLog",
+      "description": "Collection of chronological system activity logs"
+    },
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Collection of active user profiles"
+    },
+    "/authorizedUsers/{userId}": {
+      "schema": "AuthorizedPersonnel",
+      "description": "Registry of authorized HODs, Lecturers, and Class Reps"
+    },
+    "/systemSettings/{settingId}": {
+      "schema": "AutoLoggingSettings",
+      "description": "System-wide automated logging and governance configuration"
+    }
+  }
+}

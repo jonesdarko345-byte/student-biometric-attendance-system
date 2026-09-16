@@ -1,0 +1,6 @@
+{
+  "name": "UENR Course Attendance",
+  "description": "Official course attendance, timetable scheduling, and biometric verification system for the University of Energy and Natural Resources (UENR).",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

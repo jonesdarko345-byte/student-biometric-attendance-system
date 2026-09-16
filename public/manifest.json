@@ -1,0 +1,25 @@
+{
+  "id": "/",
+  "name": "UENR Course Attendance & Timetable",
+  "short_name": "UENR Timetable",
+  "description": "Offline-ready semester timetable and course attendance portal for UENR students and faculty.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#002236",
+  "theme_color": "#003b5c",
+  "icons": [
+    {
+      "src": "/assets/uenr_logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/uenr_logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}
