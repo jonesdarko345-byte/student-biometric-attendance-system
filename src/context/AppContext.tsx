@@ -166,7 +166,7 @@ const STORAGE_KEYS = {
   TIMETABLE: 'uenr_timetable_v3_custom',
   ATTENDANCE: 'uenr_attendance_v2',
   AUDIT_LOGS: 'uenr_audit_logs_v2',
-  SEMESTER: 'uenr_semester_v2',
+  SEMESTER: 'uenr_semester_v3_2026',
   AUTHORIZED: 'uenr_authorized_users_v2'
 };
 
@@ -192,7 +192,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [authorizedUsers, setAuthorizedUsers] = useState<AuthorizedUser[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.AUTHORIZED);
-      return saved ? JSON.parse(saved) : INITIAL_AUTHORIZED_USERS;
+      if (saved) {
+        const parsed: AuthorizedUser[] = JSON.parse(saved);
+        // Ensure legacy mock lecturer auth-2 is removed
+        const cleaned = parsed.filter((u) => u.id !== 'auth-2' && u.email !== 'dr.asante@uenr.edu.gh');
+        return cleaned.length > 0 ? cleaned : INITIAL_AUTHORIZED_USERS;
+      }
+      return INITIAL_AUTHORIZED_USERS;
     } catch {
       return INITIAL_AUTHORIZED_USERS;
     }
@@ -362,8 +368,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [semester] = useState<SemesterConfig>(() => {
     try {
+      localStorage.removeItem('uenr_semester_v2');
       const saved = localStorage.getItem(STORAGE_KEYS.SEMESTER);
-      return saved ? JSON.parse(saved) : INITIAL_SEMESTER;
+      if (saved) {
+        const parsed: SemesterConfig = JSON.parse(saved);
+        if (parsed.academicYear === '2026/2027') return parsed;
+      }
+      localStorage.setItem(STORAGE_KEYS.SEMESTER, JSON.stringify(INITIAL_SEMESTER));
+      return INITIAL_SEMESTER;
     } catch {
       return INITIAL_SEMESTER;
     }
@@ -563,6 +575,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         batch.delete(doc(db, 'timetable', tid));
         needsCommit = true;
       }
+
+      // Purge legacy mock lecturer auth-2 from Firestore if present
+      batch.delete(doc(db, 'authorizedUsers', 'auth-2'));
+      needsCommit = true;
 
       // 3. Check and seed authorized users registry if empty
       const authSnap = await getDocs(query(collection(db, 'authorizedUsers'), limit(1)));
@@ -1212,7 +1228,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         code: courseData.code.toUpperCase().trim(),
         title: courseData.title.trim(),
         creditHours: courseData.creditHours || 3,
-        lecturer: courseData.lecturer?.trim() || 'Department Lecturer',
+        lecturer: courseData.lecturer?.trim() || 'Unassigned',
         department: courseData.department || 'Department of Information Technology'
       };
       setCourses((prev) => [...prev, newCourse]);

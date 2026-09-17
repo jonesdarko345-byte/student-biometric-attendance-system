@@ -158,12 +158,14 @@ export const DashboardTop: React.FC = () => {
   };
 
   // Find currently active or next upcoming slot today
-  const activeOrUpcomingSlot = todaySlots.find((slot) => {
-    const status = getCurrentSlotStatus(slot);
-    return status.status === 'in-progress' || status.status === 'upcoming';
-  }) || todaySlots[0];
+  const activeOrUpcomingSlot = todaySlots.length > 0
+    ? (todaySlots.find((slot) => {
+        const status = getCurrentSlotStatus(slot);
+        return status.status === 'in-progress' || status.status === 'upcoming';
+      }) || todaySlots[0])
+    : undefined;
 
-  const primarySlotCourse = activeOrUpcomingSlot ? courses.find((c) => c.id === activeOrUpcomingSlot.courseId) : courses[0];
+  const primarySlotCourse = activeOrUpcomingSlot ? courses.find((c) => c.id === activeOrUpcomingSlot.courseId) : undefined;
   const primarySlotStatus = activeOrUpcomingSlot ? getCurrentSlotStatus(activeOrUpcomingSlot) : null;
 
   const roleMeta = getRoleBadge(currentUser.role);
@@ -229,8 +231,8 @@ export const DashboardTop: React.FC = () => {
                 Course Attendance & Faculty Portal
               </h1>
 
-              <p className="text-xs sm:text-sm text-slate-200 max-w-xl">
-                {semester.name} · {semester.academicYear} · Manage daily roll calls, student biometrics, and 75% exam compliance.
+              <p className="text-xs sm:text-sm text-slate-200/90 max-w-xl font-normal leading-relaxed">
+                Daily course roll calls, biometric fingerprint verification, and 75% exam compliance.
               </p>
             </div>
 
@@ -300,10 +302,10 @@ export const DashboardTop: React.FC = () => {
                       Audit Level 300 attendance rates, verify 75% exam compliance, and manage staff access.
                     </p>
                   </div>
-                ) : activeOrUpcomingSlot ? (
+                ) : activeOrUpcomingSlot && primarySlotCourse ? (
                   <div>
                     <h2 className="text-lg sm:text-xl font-black text-white">
-                      {primarySlotCourse?.code} · {primarySlotCourse?.title}
+                      {primarySlotCourse.code} · {primarySlotCourse.title}
                     </h2>
                     <div className="flex items-center gap-3 text-xs text-slate-200 mt-1 flex-wrap font-medium">
                       <span className="flex items-center gap-1">
@@ -315,6 +317,14 @@ export const DashboardTop: React.FC = () => {
                         <MapPin className="w-3.5 h-3.5 text-slate-300" />
                         {activeOrUpcomingSlot.venue}
                       </span>
+                      {primarySlotCourse.lecturer && primarySlotCourse.lecturer !== 'Unassigned' && (
+                        <>
+                          <span>·</span>
+                          <span className="text-emerald-300 font-semibold">
+                            {primarySlotCourse.lecturer}
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -323,7 +333,7 @@ export const DashboardTop: React.FC = () => {
                       {isWeekend ? 'Weekend: No Timetable Lectures Today' : 'No Timetable Lectures Scheduled Today'}
                     </h2>
                     <p className="text-xs sm:text-sm text-slate-200">
-                      You can take an on-demand custom attendance session or configure your weekly timetable slots.
+                      Lectures and assigned lecturers will only appear when you explicitly create and assign them in Timetable.
                     </p>
                   </div>
                 )}
@@ -1000,7 +1010,7 @@ export const DashboardTop: React.FC = () => {
                           <span className="text-xs font-bold text-slate-900">{course?.title}</span>
                         </div>
                         <div className="text-[11px] text-slate-500 flex items-center gap-2">
-                          <span>{course?.lecturer}</span>
+                          <span>{course?.lecturer && course.lecturer !== 'Unassigned' ? course.lecturer : 'Lecturer Unassigned'}</span>
                           <span>·</span>
                           <span className="flex items-center gap-1">
                             <MapPin className="w-3 h-3" />

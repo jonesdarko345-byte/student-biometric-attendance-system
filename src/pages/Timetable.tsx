@@ -159,7 +159,7 @@ export const Timetable: React.FC = () => {
 
       const codeClean = courseCode.toUpperCase().trim();
       const titleClean = courseTitle.trim();
-      const lecturerClean = lecturer.trim() || 'Department Lecturer';
+      const lecturerClean = lecturer.trim() || 'Unassigned';
 
       for (const day of selectedDays) {
         await assignCourseWithSchedule(
@@ -229,7 +229,7 @@ export const Timetable: React.FC = () => {
       code: editCourseCode.toUpperCase().trim(),
       title: editCourseTitle.trim(),
       creditHours: Number(editCourseCredits),
-      lecturer: editCourseLecturer.trim() || 'Department Lecturer'
+      lecturer: editCourseLecturer.trim() || 'Unassigned'
     });
 
     setEditingCourse(null);
@@ -670,10 +670,15 @@ export const Timetable: React.FC = () => {
                                 {course?.title || 'Unknown Course'}
                               </div>
 
-                              {course?.lecturer && (
+                              {course?.lecturer && course.lecturer !== 'Unassigned' ? (
                                 <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1 truncate">
                                   <User className="w-3 h-3 text-slate-400 shrink-0" />
                                   <span>{course.lecturer}</span>
+                                </div>
+                              ) : (
+                                <div className="text-[11px] text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1 truncate">
+                                  <User className="w-3 h-3 text-amber-500 shrink-0" />
+                                  <span>Unassigned Lecturer</span>
                                 </div>
                               )}
 
@@ -807,7 +812,9 @@ export const Timetable: React.FC = () => {
                       <div className="mt-2 space-y-1 text-xs text-slate-500 dark:text-slate-400">
                         <div className="flex items-center gap-1.5">
                           <User className="w-3.5 h-3.5 text-slate-400" />
-                          <span>{course.lecturer}</span>
+                          <span className={course.lecturer && course.lecturer !== 'Unassigned' ? '' : 'italic text-amber-600 dark:text-amber-400'}>
+                            {course.lecturer && course.lecturer !== 'Unassigned' ? course.lecturer : 'No Lecturer Assigned'}
+                          </span>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <GraduationCap className="w-3.5 h-3.5 text-slate-400" />
@@ -956,7 +963,7 @@ export const Timetable: React.FC = () => {
                       </label>
                       <input
                         type="text"
-                        placeholder="e.g. Dr. Kwabena Asante"
+                        placeholder="Enter Lecturer name or leave blank for Unassigned"
                         value={lecturer}
                         onChange={(e) => setLecturer(e.target.value)}
                         className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#007c82]"

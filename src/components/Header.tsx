@@ -102,14 +102,9 @@ export const Header: React.FC = () => {
               />
             </div>
             <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <span className="font-extrabold text-lg sm:text-xl tracking-tight text-white group-hover:text-emerald-300 transition-colors">
-                  UENR Course Attendance
-                </span>
-                <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-[#8dc63f]/25 text-[#8dc63f] border border-[#8dc63f]/40">
-                  IT Dept
-                </span>
-              </div>
+              <span className="font-extrabold text-lg sm:text-xl tracking-tight text-white group-hover:text-emerald-300 transition-colors">
+                UENR Course Attendance
+              </span>
               <span className="text-xs sm:text-sm text-slate-300 font-medium truncate max-w-[220px] sm:max-w-md">
                 Faculty & Class Rep Portal
               </span>
@@ -450,28 +445,6 @@ export const Header: React.FC = () => {
               </div>
             ) : null}
           </div>
-        </div>
-
-        {/* Mobile Navigation Bar */}
-        <div className="lg:hidden flex items-center justify-around py-2.5 border-t border-white/10 overflow-x-auto gap-1">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-lg text-[11px] font-semibold transition-all whitespace-nowrap ${
-                  isActive
-                    ? 'text-emerald-300 bg-white/10'
-                    : 'text-slate-300 hover:text-white'
-                }`}
-              >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-300' : 'text-slate-400'}`} />
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
         </div>
       </div>
     </header>

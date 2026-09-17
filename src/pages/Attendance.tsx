@@ -71,22 +71,12 @@ export const Attendance: React.FC = () => {
     return !slot.stream || slot.stream === 'all' || slot.stream === selectedStream;
   });
 
-  // Auto-select course scheduled for that day if user hasn't picked yet, or default to first course
+  // Only reset course if the currently selected course was deleted
   useEffect(() => {
-    if (courses.length === 0) {
+    if (selectedCourseId && !courses.some((c) => c.id === selectedCourseId)) {
       setSelectedCourseId('');
-      return;
     }
-
-    if (scheduledSlotsForDay.length > 0) {
-      const match = scheduledSlotsForDay.find((s) => s.courseId === selectedCourseId);
-      if (!match) {
-        setSelectedCourseId(scheduledSlotsForDay[0].courseId);
-      }
-    } else if (!courses.some((c) => c.id === selectedCourseId)) {
-      setSelectedCourseId(courses[0].id);
-    }
-  }, [selectedDate, timetable, courses, selectedCourseId, selectedStream]);
+  }, [courses, selectedCourseId]);
 
   // Filter students belonging to this stream / division
   const streamStudents = students.filter((s) => {
@@ -317,22 +307,33 @@ export const Attendance: React.FC = () => {
               className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-800 dark:text-slate-100 font-medium focus:outline-none focus:ring-2 focus:ring-[#007c82] disabled:opacity-50"
             >
               {courses.length === 0 ? (
-                <option value="">No courses assigned yet</option>
+                <option value="">No courses created yet</option>
               ) : (
-                courses.map((course) => {
-                  const isScheduledToday = timetable.some(
-                    (t) => t.courseId === course.id && t.dayOfWeek === dayOfWeek
-                  );
-                  return (
-                    <option key={course.id} value={course.id}>
-                      {course.code} – {course.title} {isScheduledToday ? '★ [Scheduled Today]' : ''}
-                    </option>
-                  );
-                })
+                <>
+                  <option value="">-- Choose Course / Lecture --</option>
+                  {courses.map((course) => {
+                    const isScheduledToday = timetable.some(
+                      (t) => t.courseId === course.id && t.dayOfWeek === dayOfWeek
+                    );
+                    const lecturerText =
+                      course.lecturer && course.lecturer !== 'Unassigned'
+                        ? ` (${course.lecturer})`
+                        : ' (No Lecturer Assigned)';
+                    return (
+                      <option key={course.id} value={course.id}>
+                        {course.code} – {course.title}{lecturerText}{isScheduledToday ? ' ★ [Scheduled Today]' : ''}
+                      </option>
+                    );
+                  })}
+                </>
               )}
             </select>
             <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 block truncate">
-              {activeCourse ? `Lecturer: ${activeCourse.lecturer}` : 'Please assign courses in Timetable.'}
+              {activeCourse
+                ? activeCourse.lecturer && activeCourse.lecturer !== 'Unassigned'
+                  ? `Assigned Lecturer: ${activeCourse.lecturer}`
+                  : 'Lecturer: Unassigned (Assign in Timetable)'
+                : 'Select an assigned course to start attendance.'}
             </span>
           </div>
 
@@ -427,24 +428,65 @@ export const Attendance: React.FC = () => {
         )}
       </div>
 
-      {/* BIOMETRIC MODE */}
-      {viewMode === 'biometric' && activeCourse && (
-        <BiometricAttendance
-          date={selectedDate}
-          course={activeCourse}
-          presentStudentIds={Object.entries(sessionRecords)
-            .filter(([, status]) => status === 'present')
-            .map(([id]) => id)}
-          isSessionFinalized={isFinalized}
-          stream={selectedStream === 'all' ? undefined : selectedStream}
-          onAttendanceMarked={handleBiometricMarked}
-          onFinalizeSession={handleFinalize}
-        />
-      )}
+      {/* ACTIVE SESSION OR EMPTY STATE */}
+      {!activeCourse ? (
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-10 sm:p-14 text-center border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+          <div className="w-16 h-16 rounded-2xl bg-teal-50 dark:bg-teal-950/50 border border-teal-200 dark:border-teal-800/80 flex items-center justify-center mx-auto text-[#007c82] dark:text-teal-400 shadow-xs">
+            <BookOpen className="w-8 h-8" />
+          </div>
+          <div className="max-w-md mx-auto space-y-2">
+            <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">
+              No Lecture Selected
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+              Lectures and assigned lecturers will only appear when you explicitly select a course above or schedule one in Timetable.
+            </p>
+          </div>
+          {scheduledSlotsForDay.length > 0 && (
+            <div className="pt-2 max-w-md mx-auto">
+              <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-2">
+                Timetable Slots Configured for Today:
+              </span>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {scheduledSlotsForDay.map((slot) => {
+                  const c = courses.find((crs) => crs.id === slot.courseId);
+                  if (!c) return null;
+                  return (
+                    <button
+                      key={slot.id}
+                      type="button"
+                      onClick={() => setSelectedCourseId(c.id)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#007c82]/10 hover:bg-[#007c82]/20 text-[#007c82] dark:text-teal-300 border border-[#007c82]/20 transition-all cursor-pointer"
+                    >
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>{c.code}: {slot.startTime} – {slot.endTime}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <>
+          {/* BIOMETRIC MODE */}
+          {viewMode === 'biometric' && (
+            <BiometricAttendance
+              date={selectedDate}
+              course={activeCourse}
+              presentStudentIds={Object.entries(sessionRecords)
+                .filter(([, status]) => status === 'present')
+                .map(([id]) => id)}
+              isSessionFinalized={isFinalized}
+              stream={selectedStream === 'all' ? undefined : selectedStream}
+              onAttendanceMarked={handleBiometricMarked}
+              onFinalizeSession={handleFinalize}
+            />
+          )}
 
-      {/* MANUAL CHECKLIST MODE */}
-      {viewMode === 'manual' && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+          {/* MANUAL CHECKLIST MODE */}
+          {viewMode === 'manual' && (
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
           
           {/* Header & Quick Action Bar */}
           <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/80 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -648,6 +690,8 @@ export const Attendance: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

@@ -12,6 +12,7 @@ export const INITIAL_TIMETABLE: TimetableSlot[] = [];
 export const INITIAL_ATTENDANCE: AttendanceRecord[] = [];
 
 // Whitelist of authorized staff and class reps
+// Lecturers only appear when explicitly added/assigned by the HOD
 export const INITIAL_AUTHORIZED_USERS: AuthorizedUser[] = [
   {
     id: 'auth-1',
@@ -20,15 +21,6 @@ export const INITIAL_AUTHORIZED_USERS: AuthorizedUser[] = [
     role: 'hod',
     department: 'Department of Information Technology',
     addedAt: '2025-01-10'
-  },
-  {
-    id: 'auth-2',
-    email: 'dr.asante@uenr.edu.gh',
-    name: 'Dr. Kwabena Asante',
-    role: 'lecturer',
-    department: 'Department of Information Technology',
-    courseAssigned: 'IT 301',
-    addedAt: '2025-01-12'
   },
   {
     id: 'auth-3',
@@ -53,10 +45,10 @@ export const INITIAL_AUDIT_LOGS: AuditLog[] = [
 ];
 
 export const INITIAL_SEMESTER: SemesterConfig = {
-  name: 'Second Semester 2024/2025',
-  academicYear: '2024/2025',
-  semester: 'Semester 2',
-  startDate: '2025-01-20',
-  endDate: '2025-06-15',
+  name: 'First Semester 2026/2027',
+  academicYear: '2026/2027',
+  semester: 'Semester 1',
+  startDate: '2026-09-01',
+  endDate: '2027-01-31',
   isActive: true
 };
