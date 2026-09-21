@@ -53,7 +53,8 @@ export const DashboardTop: React.FC = () => {
     isSyncing,
     loginWithGoogle,
     setActiveTab,
-    openDatabaseTab
+    openDatabaseTab,
+    setIsRoleMenuOpen
   } = useApp();
 
   // Live ticking clock
@@ -205,9 +206,16 @@ export const DashboardTop: React.FC = () => {
                   {greeting}
                 </span>
 
-                <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border backdrop-blur-md ${roleMeta.color}`}>
-                  {roleMeta.label}
-                </span>
+                <button
+                  type="button"
+                  onClick={() => setIsRoleMenuOpen(true)}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border backdrop-blur-md cursor-pointer hover:opacity-90 active:scale-95 transition-all shadow-xs ${roleMeta.color}`}
+                  title="Click to switch active role or account options"
+                  aria-label="Click to switch active role or account options"
+                >
+                  <span>{roleMeta.label}</span>
+                  <span className="text-[10px] opacity-75 underline underline-offset-1">Switch ▾</span>
+                </button>
 
                 <span className="hidden sm:inline-flex items-center gap-1 text-xs text-slate-200/90 font-medium">
                   <GraduationCap className="w-3.5 h-3.5 text-emerald-300" />

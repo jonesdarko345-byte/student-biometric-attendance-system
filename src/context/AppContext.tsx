@@ -69,6 +69,8 @@ interface AppContextType {
   openDatabaseTab: () => void;
   currentUser: CurrentUser;
   setCurrentUser: React.Dispatch<React.SetStateAction<CurrentUser>>;
+  isRoleMenuOpen: boolean;
+  setIsRoleMenuOpen: (open: boolean) => void;
 
   // Theme & Accessibility in Low-Light
   theme: ThemeMode;
@@ -178,6 +180,7 @@ const MASTER_HOD_EMAIL = 'jonesdarko345@gmail.com';
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [activeTab, setActiveTab] = useState<NavigationTab>('home');
   const [adminSubTab, setAdminSubTab] = useState<AdminSubTab>('roster');
+  const [isRoleMenuOpen, setIsRoleMenuOpen] = useState<boolean>(false);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
   const [isCloudConnected, setIsCloudConnected] = useState<boolean>(false);
@@ -1570,6 +1573,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         openDatabaseTab,
         currentUser,
         setCurrentUser,
+        isRoleMenuOpen,
+        setIsRoleMenuOpen,
         theme,
         isDarkMode,
         toggleTheme,
